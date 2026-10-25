@@ -14,15 +14,27 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
+    # Ensure instance and uploads directories exist
+    os.makedirs(app.instance_path, exist_ok=True)
+    os.makedirs(os.path.join(app.root_path, '..', 'instance'), exist_ok=True)
+    os.makedirs(os.path.join(app.instance_path, 'instance'), exist_ok=True)
+    
+    # Normalize SQLite database URI to absolute path so SQLite never fails to create/open the db file
+    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if db_uri and db_uri.startswith('sqlite:///'):
+        rel_path = db_uri[len('sqlite:///'):]
+        if not os.path.isabs(rel_path):
+            clean_rel = rel_path[len('instance/'):] if rel_path.startswith('instance/') else rel_path
+            abs_db_path = os.path.abspath(os.path.join(app.instance_path, clean_rel))
+            os.makedirs(os.path.dirname(abs_db_path), exist_ok=True)
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{abs_db_path}"
+    
+    upload_dir = os.path.join(app.root_path, '..', app.config.get('UPLOAD_FOLDER', 'uploads'))
+    os.makedirs(upload_dir, exist_ok=True)
+    
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    
-    # Create uploads and instance directories
-    os.makedirs(app.instance_path, exist_ok=True)
-    os.makedirs(os.path.join(app.root_path, '..', 'instance'), exist_ok=True)
-    upload_dir = os.path.join(app.root_path, '..', app.config['UPLOAD_FOLDER'])
-    os.makedirs(upload_dir, exist_ok=True)
     
     # Register blueprints
     from app.auth import bp as auth_bp
