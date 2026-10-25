@@ -43,3 +43,22 @@ def create_app(config_class=Config):
     
     return app
 
+
+# Default app instance for WSGI servers (e.g. gunicorn app:app)
+app = create_app()
+with app.app_context():
+    try:
+        db.create_all()
+        from app.models import User
+        admin_email = os.environ.get('ADMIN_EMAIL', 'admin@civiclean.com')
+        admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+        admin = User.query.filter(User.email.in_([admin_email, 'admin@civiclean.com', 'admin@mapmywaste.com'])).first()
+        if not admin:
+            admin = User(name='Admin', email=admin_email, role='admin', points=0)
+            admin.set_password(admin_password)
+            db.session.add(admin)
+            db.session.commit()
+            print(f"Admin user initialized: {admin_email}")
+    except Exception as e:
+        print(f"Database auto-init note: {e}")
+
