@@ -17,7 +17,7 @@ with app.app_context():
     
     # Now add the columns if they don't already exist (for existing databases)
     import sqlite3
-    db_path = 'mapmywaste.db'
+    db_path = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
     if os.path.exists(db_path):
         con = sqlite3.connect(db_path)
         cur = con.cursor()

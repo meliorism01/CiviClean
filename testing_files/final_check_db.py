@@ -28,7 +28,8 @@ with app.app_context():
     print(f"is_spam exists: {'is_spam' in col_names}")
     
     # Try to insert a test record
-    print("\nDatabase file:", os.path.abspath('mapmywaste.db'))
-    print("File exists:", os.path.exists('mapmywaste.db'))
-    if os.path.exists('mapmywaste.db'):
-        print("File size:", os.path.getsize('mapmywaste.db'), "bytes")
+    db_file = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
+    print("\nDatabase file:", os.path.abspath(db_file))
+    print("File exists:", os.path.exists(db_file))
+    if os.path.exists(db_file):
+        print("File size:", os.path.getsize(db_file), "bytes")

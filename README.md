@@ -1,405 +1,743 @@
-# CiviClean
+# ♻️ CiviClean: Crowdsourced Waste Tracking & Route Optimization
 
-### Cleaner Cities. Smarter Communities.
+**Transforming citizen waste reports into AI-assisted collection planning for cleaner, smarter cities.**
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.3.3-black?logo=flask)](https://flask.palletsprojects.com/)
-[![SQLite](https://img.shields.io/badge/Database-SQLite%203-003B57?logo=sqlite)](https://www.sqlite.org/)
-[![SQLAlchemy](https://img.shields.io/badge/ORM-SQLAlchemy%202.0-red)](https://www.sqlalchemy.org/)
-[![scikit--learn](https://img.shields.io/badge/ML-scikit--learn%201.3.2-orange?logo=scikitlearn)](https://scikit-learn.org/)
-[![Leaflet](https://img.shields.io/badge/Maps-Leaflet%201.9.4-199900?logo=leaflet)](https://leafletjs.com/)
-[![Bootstrap](https://img.shields.io/badge/UI-Bootstrap%205.3-7952B3?logo=bootstrap)](https://getbootstrap.com/)
-
-**CiviClean** is an open-source civic technology platform designed to transform community waste reporting into data-driven municipal collection planning. By combining citizen-contributed photo reports with geographic metadata extraction, spatial K-Means clustering, and municipal fleet dispatch workflows, CiviClean bridges the gap between public cleanliness monitoring and municipal sanitation logistics.
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)
+![Flask](https://img.shields.io/badge/Flask-Backend-green?logo=flask)
+![SQLite](https://img.shields.io/badge/SQLite-Database-blue?logo=sqlite)
+![Machine Learning](https://img.shields.io/badge/AI-Machine%20Learning-orange)
+![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-Maps-brightgreen?logo=openstreetmap)
+![Waste Management](https://img.shields.io/badge/Domain-Waste%20Management-brightgreen)
 
 ---
 
-## 📌 Workflow Overview
+## 📌 Overview
 
-![CiviClean Operational Pipeline](docs/screenshots/workflow_pipeline.png)
+**CiviClean** is a smart waste reporting and collection management platform designed to connect community-driven waste reporting with data-informed collection planning.
 
-CiviClean coordinates a structured 4-step pipeline:
-1. **Capture**: Citizens capture and submit geo-located photos of waste accumulation in their neighborhoods.
-2. **Extract**: The platform automatically extracts GPS coordinates via EXIF metadata, browser geolocation, or manual map selection.
-3. **Cluster**: Spatial clustering algorithms aggregate scattered reports into prioritized waste collection zones and identify optimal service centroids.
-4. **Route & Dispatch**: Municipal administrators monitor hotspots, schedule sanitation trucks, and assign collection routes to drivers.
+The platform enables citizens to report garbage hotspots using photographs and location information. Administrators can review submitted reports, visualize waste locations, identify geographic clusters, and manage collection resources such as trucks, drivers, routes, and assignments.
 
----
+By combining geospatial visualization, image processing, machine learning techniques, and gamification, CiviClean aims to make waste reporting more accessible and collection operations more organized.
 
-## 🛑 Problem Statement
+## 🎯 Problem Statement
 
-Rapid urban growth and distributed populations present substantial challenges for municipal sanitation authorities:
+Improper waste disposal creates environmental, public health, and urban management challenges. Waste hotspots may remain unreported, while collection teams can struggle to prioritize locations and coordinate available resources efficiently.
 
-- **Unreported Waste Accumulation**: Illegal dumping sites and overflowing bins often go unnoticed until they become public health hazards.
-- **Unstructured Citizen Reporting**: Traditional complaint mechanisms (calls, emails, social media) lack verified location data, precise coordinates, and visual evidence, delaying municipal response.
-- **Static Collection Schedules**: Collection trucks frequently follow fixed, predefined routes regardless of where waste has actually accumulated, resulting in excessive fuel consumption and unserviced hotspots.
-- **Lack of Civic Feedback**: Citizens rarely receive confirmation or visibility into the resolution of reported issues, leading to community disengagement.
+Traditional reporting processes may lack centralized visibility, location-aware reporting, and convenient tools for identifying areas that require attention.
 
----
+CiviClean addresses these challenges by providing a centralized platform for community reporting, geographic analysis, and waste collection management.
 
-## 💡 Solution Architecture
+## 💡 Proposed Solution
 
-CiviClean addresses these challenges through a unified web platform that integrates civic reporting with administrative logistics:
+CiviClean connects citizens and administrators through a unified waste management platform.
 
-```mermaid
-flowchart TD
-    subgraph Citizens["👥 Citizen Layer"]
-        A[Citizen Web Browser] -->|Upload Photo & Geolocation| B[Waste Reporting Portal]
-        A -->|View Leaderboard & Badges| C[Gamification Dashboard]
-    end
+Citizens can submit waste reports with photographs and location information, track their submissions, and earn rewards for participating in community cleanliness initiatives.
 
-    subgraph Backend["⚙️ Flask Application Core"]
-        B --> D[Upload & Ingestion Handler]
-        D --> E[EXIF / Geolocation Extractor]
-        D --> F[MD5 Duplicate & Spam Filter]
-        D --> G[Image Validation & Scoring]
-        
-        E & F & G --> H[(SQLite Database / SQLAlchemy)]
-        
-        I[Clustering Engine] -->|K-Means Spatial Grouping| H
-        I --> J[Centroid & Hotspot Generator]
-    end
+Administrators can review reports, visualize waste hotspots on an interactive map, group nearby reports into geographic clusters, and manage fleet resources and collection assignments.
 
-    subgraph Administration["🚛 Municipal Management"]
-        H --> K[Admin Operations Dashboard]
-        J --> L[Interactive Waste Hotspot Map]
-        K --> M[Fleet & Driver Management]
-        L & M --> N[Truck Dispatch & Route Scheduling]
-    end
+The platform is designed to support more informed collection planning through accessible reporting and location-based analysis.
 
-    subgraph Mapping["🗺️ Geospatial Layer"]
-        L --> O[Leaflet.js + OpenStreetMap]
-        N --> O
-    end
-```
+## ✨ Key Features
 
----
+### 📍 Location-Aware Waste Reporting
 
-## ✨ Features
+* Submit waste reports with photographs and descriptions.
+* Support location input through browser geolocation, manual coordinates, or image GPS metadata where available.
+* Associate reports with geographic locations.
+* Display report confirmations and relevant report information.
 
-### 👥 Citizen Experience
-- **Account Management & Authentication**: Secure sign-up, sign-in, and session persistence powered by Flask-Login and Werkzeug password hashing.
-- **Multi-Source Geolocation Capture**:
-  - **EXIF GPS Metadata Extraction**: Automatically parses embedded GPS tags (`GPSLatitude`, `GPSLongitude`) directly from photo files using Pillow.
-  - **Browser Geolocation API**: Allows citizens to submit their real-time device location with one click.
-  - **Interactive Map Picker / Manual Input**: Fallback interface enabling users to specify exact geographic coordinates.
-- **Automated Duplicate Prevention**: Computes cryptographic MD5 hashes of uploaded images to flag duplicate or spam submissions.
-- **Personal Dashboard & Report History**: Tracks all submitted reports, verification status, timestamps, and geographic coordinates.
-- **Civic Gamification & Achievements**:
-  - Points awarded for verified reports (10 base points + milestone bonuses).
-  - Progressive achievement badges: *Rookie Reporter* (1 report), *Neighborhood Watcher* (5 reports), and *Waste Warrior* (20 reports).
-  - City-wide public leaderboard fostering community engagement.
+### 🗺️ Interactive Waste Mapping
 
-### 🧠 Waste Intelligence & Spatial Analytics
-- **Spatial K-Means Hotspot Clustering**: Analyzes coordinate distributions using `scikit-learn` to automatically group scattered reports into distinct collection zones.
-- **Centroid Calculation**: Computes mathematical centroids for each cluster to identify optimal pickup points for municipal fleets.
-- **Interactive Geospatial Visualization**: Interactive Leaflet.js map with OpenStreetMap tiles displaying individual waste reports, severity markers, and cluster centroid overlays.
-- **Image Content Verification**: Image integrity verification via Pillow with integrated scoring heuristics.
+* Visualize reported waste locations on interactive maps.
+* Use Leaflet.js and OpenStreetMap for geographic visualization.
+* Help administrators identify areas with concentrated waste reports.
+* Display cluster locations and geographic summaries where supported.
 
-### 🚛 Municipal Operations & Fleet Management
-- **Administrative Command Center**: Centralized overview displaying total reports, registered users, active clusters, and recent incident logs with sorting by recency or waste score.
-- **Fleet Asset Registry**: Full CRUD management of municipal trucks, including capacity ($m^3$), vehicle type (Compactor, Dump Truck), and assigned driver.
-- **Driver Roster**: Profile tracking for sanitation personnel, license verification numbers, contact information, and duty availability status.
-- **Route Management**: Define collection routes with distance metrics, estimated completion durations, and JSON-encoded waypoint stops.
-- **Daily Dispatch Assignments**: Schedule and assign specific trucks, drivers, and routes for targeted collection dates with operational status tracking (*Scheduled*, *In-Progress*, *Completed*).
-- **Prototyping & Demo Seeders**: Built-in administrative tools to generate realistic sample reports, users, and fleet records for operational simulation.
+### 🧠 Geospatial Clustering
 
----
+* Apply K-means clustering to group nearby waste reports.
+* Identify geographic concentrations of reported waste.
+* Support collection-zone planning using cluster information.
 
-## 📸 Interface Showcase
+*Geographic clustering is distinct from vehicle-route optimization. Route efficiency depends on the routing algorithm, distance calculations, and operational constraints used.*
 
-| Citizen Waste Reporting Interface | Submission Result & Gamification |
-| :---: | :---: |
-| ![Waste Reporting Form](docs/screenshots/waste_report_form.png) | ![Report Confirmation](docs/screenshots/report_confirmation.png) |
-| *Citizens upload waste evidence with automatic GPS coordinate extraction and interactive Leaflet map preview.* | *Submission receipt displaying location geocoding, points awarded, badge unlock notifications, and next steps.* |
+### 🏆 Gamification and Community Engagement
 
-<br>
+* Award points for eligible waste reports.
+* Support badges and reporting statistics.
+* Display leaderboards.
+* Encourage continued participation in community cleanliness activities.
 
-| Municipal Fleet Dispatch & Route Planning |
-| :---: |
-| ![Fleet & Truck Assignments](docs/screenshots/truck_assignments.png) |
-| *Administrative dashboard combining city-wide hotspot mapping, truck schedules, driver rosters, and daily dispatch assignments.* |
+### 🛡️ Duplicate Report Detection
+
+* Use image hashes and filename-based checks where implemented.
+* Identify potential duplicate submissions.
+* Provide duplicate-status information during the reporting workflow.
+
+### 🚛 Fleet and Collection Management
+
+* Manage truck records.
+* Maintain driver information.
+* Organize collection routes.
+* Manage truck, driver, and route assignments.
+* Support administrative collection planning.
+
+### 📊 Administrative Dashboard
+
+* Review submitted waste reports.
+* Monitor user and reporting activity.
+* Visualize geographic clusters.
+* Review report scores and duplicate or spam indicators where available.
+* Access fleet management and collection planning features.
+
+### 🖼️ Image Upload and Processing
+
+* Accept supported image uploads.
+* Apply configured file validation.
+* Use secure filename handling.
+* Extract image metadata where supported.
+* Process images through the configured detection or scoring service, if available.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Version | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Backend Framework** | [Flask](https://flask.palletsprojects.com/) | `2.3.3` | Core web framework, application factory, and routing blueprints |
-| **Database & ORM** | [SQLite 3](https://sqlite.org/) / [SQLAlchemy](https://www.sqlalchemy.org/) | `3.0.5` / `2.0+` | Relational data persistence, schema migrations, and ORM abstractions |
-| **Authentication** | [Flask-Login](https://flask-login.readthedocs.io/) / [Werkzeug](https://palletsprojects.com/p/werkzeug/) | `0.6.3` / `2.3.7` | User session management, access control, and password hashing |
-| **Spatial Clustering** | [scikit-learn](https://scikit-learn.org/) | `1.3.2` | K-Means clustering algorithm for grouping geographic waste coordinates |
-| **Scientific Computing** | [NumPy](https://numpy.org/) | `1.26.4` | Matrix computations and coordinate transformations for clustering |
-| **Image Processing** | [Pillow (PIL)](https://python-pillow.org/) | `10.1.0` | Image file validation, format conversions, and EXIF GPS metadata extraction |
-| **Mapping & Geospatial** | [Leaflet.js](https://leafletjs.com/) | `1.9.4` | Client-side interactive maps, marker overlays, and coordinate previews |
-| **Map Tile Provider** | [OpenStreetMap](https://www.openstreetmap.org/) | — | Open-source map tile layers |
-| **Frontend Styling** | [Bootstrap](https://getbootstrap.com/) / Vanilla CSS | `5.3.0` | Responsive layout, modern UI components, and custom stylesheet |
-| **Icons** | [Bootstrap Icons](https://icons.getbootstrap.com/) | `1.10.0` | Vector UI icons |
+| Layer                | Technology                        | Purpose                                          |
+| -------------------- | --------------------------------- | ------------------------------------------------ |
+| Programming Language | Python                            | Backend application logic                        |
+| Web Framework        | Flask                             | Routing and server-side application              |
+| Database             | SQLite                            | Persistent application data                      |
+| ORM                  | SQLAlchemy                        | Database models and queries                      |
+| Authentication       | Flask-Login                       | User session management                          |
+| Password Security    | Werkzeug                          | Password hashing utilities                       |
+| Frontend             | HTML, CSS, JavaScript             | User interface                                   |
+| UI Framework         | Bootstrap 5                       | Responsive interface components                  |
+| Mapping              | Leaflet.js                        | Interactive geographic maps                      |
+| Map Data             | OpenStreetMap                     | Map visualization                                |
+| Geospatial Analysis  | scikit-learn KMeans               | Geographic clustering                            |
+| Numerical Processing | NumPy                             | Numerical operations                             |
+| Image Processing     | Pillow                            | Image handling and metadata processing           |
+| Image Storage        | Local storage currently described | Uploaded report images                           |
+| Cloud Image Storage  | Cloudinary planned                | Potential centralized image storage and delivery |
+
+The technologies listed above should be checked against the current dependency files and source code. Cloudinary should be considered a planned integration until its implementation has been verified.
 
 ---
 
-## 📐 Project Structure
+## 🏗️ System Architecture
+
+CiviClean follows a modular web application architecture centered on a Flask backend.
+
+The application separates authentication, public-facing functionality, administrative operations, database models, and reusable services.
+
+### High-Level Architecture
+
+```mermaid
+flowchart TD
+    A[Citizens] --> B[Web Interface]
+    C[Administrators] --> B
+
+    B --> D[Flask Application]
+
+    D --> E[Authentication]
+    D --> F[Waste Reporting]
+    D --> G[Administrative Operations]
+
+    F --> H[Image Processing]
+    F --> I[Location Processing]
+    F --> J[Report Validation]
+
+    E --> K[(Application Database)]
+    J --> K
+    G --> K
+
+    G --> L[Geospatial Clustering]
+    G --> M[Fleet and Route Management]
+
+    H -. Planned cloud storage integration .-> N[Cloud Image Storage]
+```
+
+The cloud image storage component represents a potential future integration and should not be interpreted as an already implemented feature.
+
+### Core Data Flow
+
+1. A citizen opens the application and signs in.
+2. The citizen submits a waste photograph with relevant report information.
+3. The application validates the uploaded file.
+4. The application obtains location information through supported input methods.
+5. Image metadata and duplicate checks are processed where implemented.
+6. The backend creates a waste report and associates it with the relevant user.
+7. The application displays the report and its confirmation.
+8. Eligible submissions may contribute to user points and badges.
+9. Administrators review reports and visualize their geographic distribution.
+10. Geographic clustering supports the identification of potential waste collection zones.
+11. Administrators manage fleet resources and collection assignments.
+
+The exact processing sequence depends on the current implementation.
+
+---
+
+## 📂 Project Structure
+
+The following is a representative structure of the application. Verify it against the current repository before relying on it as an exact file inventory.
 
 ```text
 CiviClean/
 ├── app/
-│   ├── __init__.py              # Application factory, extensions, and blueprint registration
-│   ├── models.py                # SQLAlchemy models (User, WasteReport, Truck, Driver, Route, Assignment)
+│   ├── __init__.py
+│   ├── models.py
 │   ├── admin/
-│   │   ├── __init__.py          # Admin blueprint definition
-│   │   └── routes.py            # Admin dashboard, clustering, map view, fleet & route management
+│   │   ├── __init__.py
+│   │   └── routes.py
 │   ├── auth/
-│   │   ├── __init__.py          # Auth blueprint definition
-│   │   └── routes.py            # User registration, login, and session termination
+│   │   ├── __init__.py
+│   │   └── routes.py
 │   ├── main/
-│   │   ├── __init__.py          # Main blueprint definition
-│   │   └── routes.py            # Landing page, waste upload flow, dashboards, profile, and leaderboard
+│   │   ├── __init__.py
+│   │   └── routes.py
 │   ├── services/
-│   │   ├── clustering.py        # Scikit-learn K-Means clustering implementation & centroid calculation
-│   │   ├── detector.py          # Image verification, MD5 hashing, and waste detection scoring
-│   │   ├── exif_utils.py        # EXIF GPS metadata extraction from uploaded photographs
-│   │   ├── gamification.py      # Milestone calculations, badge awards, and points logic
-│   │   └── sample_data.py       # Realistic demo data generator for users, reports, and fleet assets
+│   │   ├── clustering.py
+│   │   ├── detector.py
+│   │   ├── exif_utils.py
+│   │   ├── gamification.py
+│   │   └── sample_data.py
 │   ├── static/
 │   │   ├── css/
-│   │   │   └── style.css        # Custom UI styling and component rules
 │   │   └── js/
-│   │       └── main.js          # Client-side UI interactions
 │   └── templates/
-│       ├── admin/               # Administrative templates (dashboard, map, fleet, assignments)
-│       ├── auth/                # Authentication views (login, register)
-│       ├── main/                # Citizen views (index, upload, dashboard, report result, leaderboard)
-│       └── base.html            # Master layout with navigation bar, alerts, and CDN assets
+│       ├── admin/
+│       ├── auth/
+│       ├── main/
+│       └── base.html
 ├── docs/
-│   └── screenshots/             # Verified application interface screenshots
-├── images/                      # Static branding and architecture diagrams
-├── instance/                    # SQLite database storage directory (git-ignored)
-├── model/                       # Pre-trained detector weights artifact (mapmywaste_garbage_detector.pth)
-├── scripts/                     # Database maintenance and schema verification scripts
-├── testing_files/               # Integration tests, diagnostic scripts, and project reference notes
-├── uploads/                     # Storage directory for user-submitted waste photos
-├── .env.example                 # Configuration template with environment variables
-├── .gitignore                   # Version control ignore rules
-├── config.py                    # Central application configuration class
-├── requirements.txt             # Locked Python package dependencies
-└── run.py                       # Local application entrypoint & default admin initialization
+│   └── screenshots/
+├── images/
+├── instance/
+├── model/
+├── scripts/
+├── testing_files/
+├── uploads/
+├── config.py
+├── requirements.txt
+├── run.py
+├── .env.example
+├── .gitignore
+└── README.md
 ```
 
+### Important Components
+
+| Component                      | Responsibility                                        |
+| ------------------------------ | ----------------------------------------------------- |
+| `app/__init__.py`              | Application initialization and blueprint registration |
+| `app/models.py`                | Database model definitions                            |
+| `app/auth/`                    | Registration, login, and logout functionality         |
+| `app/main/`                    | Public pages, dashboards, and reporting workflows     |
+| `app/admin/`                   | Administrative pages and operational workflows        |
+| `app/services/clustering.py`   | Geographic clustering logic                           |
+| `app/services/detector.py`     | Image scoring and duplicate-detection utilities       |
+| `app/services/exif_utils.py`   | Image metadata and GPS extraction                     |
+| `app/services/gamification.py` | Points and badge-related logic                        |
+| `app/services/sample_data.py`  | Demo data generation                                  |
+| `config.py`                    | Application configuration                             |
+| `requirements.txt`             | Python dependency definitions                         |
+| `run.py`                       | Application startup entry point                       |
+| `docs/screenshots/`            | Documentation screenshots                             |
+
+Some directories may be generated locally or contain sensitive data. Local databases, uploaded user images, virtual environments, cache files, and secrets should be excluded from version control when appropriate.
+
 ---
 
-## 🚀 Installation & Local Setup
+## 📸 Application Screenshots
+
+Add screenshots of the current CiviClean interface to the `docs/screenshots/` directory.
+
+### Dashboard
+
+Display the dashboard and its primary reporting or administrative information.
+
+![CiviClean Dashboard](docs/screenshots/dashboard.png)
+
+### Waste Report Submission
+
+Show the form used to submit a waste report.
+
+![CiviClean Waste Report Form](docs/screenshots/waste_report_form.png)
+
+### Report Confirmation
+
+Show the confirmation screen after a report is submitted.
+
+![CiviClean Report Confirmation](docs/screenshots/report_confirmation.png)
+
+### Collection Management
+
+Show the interface for managing collection assignments and fleet resources.
+
+![CiviClean Truck Assignments](docs/screenshots/truck_assignments.png)
+
+### Workflow Overview
+
+Show the system workflow or processing pipeline.
+
+![CiviClean Workflow](docs/screenshots/workflow_pipeline.png)
+
+*Ensure that each referenced image exists at the specified path. Remove or replace any screenshot references that do not match the actual repository.*
+
+---
+
+## ⚡ Getting Started
 
 ### Prerequisites
-- **Python**: Version `3.10` or newer recommended.
-- **Git**: Installed and configured on your system.
-- **Web Browser**: Any modern browser (Chrome, Edge, Firefox, Safari).
 
----
+* Python 3.10 or newer
+* pip
+* Git
+* A modern web browser
 
-### Step 1: Clone the Repository
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/meliorism01/CiviClean.git
 cd CiviClean
 ```
 
----
+### 2. Create a Virtual Environment
 
-### Step 2: Set Up Virtual Environment
-
-#### On Windows (PowerShell):
-```powershell
+```bash
 python -m venv .venv
+```
+
+### 3. Activate the Environment
+
+**Windows PowerShell**
+
+```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-#### On macOS / Linux:
+**Windows Command Prompt**
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
+**macOS/Linux**
+
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
 ```
 
----
+### 4. Install Dependencies
 
-### Step 3: Install Dependencies
 ```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+### 5. Configure Environment Variables
 
-### Step 4: Configure Environment Variables
-Copy the `.env.example` template to `.env` (optional for local development, recommended for production):
-```bash
-# On Windows PowerShell
-Copy-Item .env.example .env
+Review the application's configuration requirements before starting the server.
 
-# On macOS / Linux
-cp .env.example .env
-```
+If the project uses `.env.example`, create a local `.env` file and populate the required values.
 
----
+Never commit real credentials, API keys, or production secrets.
 
-### Step 5: Run the Application
-Launch the Flask development server:
+Ensure that `.env` is excluded by `.gitignore`.
+
+### 6. Initialize the Database
+
+Follow the database initialization procedure implemented by the application. If database tables are created automatically, verify that behavior in the startup code.
+
+Do not assume that a production database can be initialized safely by running the development entry point.
+
+### 7. Start the Application
+
 ```bash
 python run.py
 ```
 
-When started, `run.py` initializes the SQLite database schema automatically and seeds a default administrative account if one does not already exist.
+If the development server starts successfully, open:
 
 ```text
- * Serving Flask app 'app'
- * Debug mode: on
- * Running on http://127.0.0.1:5000
-Admin user created: admin@mapmywaste.com / admin123
+http://localhost:5000
 ```
 
+The default port may differ depending on the application configuration.
+
 ---
 
-### Step 6: Access the Application
-Open your browser and navigate to:
-```text
-http://127.0.0.1:5000
+## 👤 Citizen Workflow
+
+1. Register an account or sign in.
+2. Open the waste reporting interface.
+3. Upload a photograph of the waste location.
+4. Provide a description and location information.
+5. Submit the report.
+6. Review the report confirmation and available status information.
+7. Track submitted reports through the dashboard or profile.
+8. Earn points or badges when the applicable rules award them.
+
+The exact workflow and available options depend on the implemented features.
+
+## 🛡️ Administrator Workflow
+
+1. Sign in using an authorized administrator account.
+2. Review waste reports and recent activity.
+3. Inspect report locations on the administrative map.
+4. Run geographic clustering where supported.
+5. Review potential waste hotspots.
+6. Manage truck and driver information.
+7. Maintain collection routes and assignments.
+8. Review operational information to support collection planning.
+
+Administrator access should be enforced by backend authorization checks.
+
+**Security note:** No default administrator password is published in this documentation. Configure administrator access through a secure provisioning procedure.
+
+---
+
+## 📍 Routes and Endpoints
+
+The following table represents routes described in the project documentation. Verify each endpoint, HTTP method, and access requirement against the current source code.
+
+| Endpoint                   | Method                    | Description                            |
+| -------------------------- | ------------------------- | -------------------------------------- |
+| `/`                        | GET                       | Landing page or application redirect   |
+| `/auth/register`           | GET, POST                 | User registration                      |
+| `/auth/login`              | GET, POST                 | User login                             |
+| `/auth/logout`             | GET, POST, as implemented | User logout                            |
+| `/dashboard`               | GET                       | User dashboard                         |
+| `/upload`                  | GET, POST                 | Waste report submission                |
+| `/report/<id>/result`      | GET                       | Report result page                     |
+| `/reports/my`              | GET                       | User report history                    |
+| `/profile`                 | GET                       | User profile                           |
+| `/leaderboard`             | GET                       | Leaderboard                            |
+| `/contact`                 | GET, POST                 | Contact form                           |
+| `/admin/`                  | GET                       | Administrative dashboard               |
+| `/admin/cluster`           | POST                      | Geographic clustering operation        |
+| `/admin/map`               | GET                       | Administrative map                     |
+| `/admin/api/reports`       | GET                       | Report data for the administrative map |
+| `/admin/optimize-routes`   | GET, POST                 | Route planning workflow                |
+| `/admin/truck-assignments` | GET                       | Collection assignment dashboard        |
+| `/admin/manage-trucks`     | GET, POST                 | Truck management                       |
+| `/admin/manage-drivers`    | GET, POST                 | Driver management                      |
+| `/admin/manage-routes`     | GET, POST                 | Route management                       |
+
+These routes are a documentation starting point, not a guarantee that every endpoint is currently present or accessible.
+
+Protected routes must verify authentication and authorization. State-changing operations should use appropriate HTTP methods and CSRF protection where applicable.
+
+---
+
+## 🗄️ Data Models
+
+The documented application includes the following model categories. Confirm their actual fields and relationships in the database model definitions.
+
+| Model            | Purpose                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `User`           | User accounts, roles, and reporting-related information                 |
+| `WasteReport`    | Waste report details, image references, location, and processing status |
+| `ContactMessage` | Messages submitted through the contact form                             |
+| `Driver`         | Driver records and availability information                             |
+| `Truck`          | Collection vehicle information                                          |
+| `Route`          | Collection route information                                            |
+| `Assignment`     | Relationships between collection resources and scheduled work           |
+
+### Database Considerations
+
+* Define appropriate primary and foreign keys.
+* Validate incoming data before database persistence.
+* Apply access controls to user-specific records.
+* Use migrations when changing the database schema.
+* Avoid committing databases that contain private or production data.
+* Document retention and deletion policies for reports and uploaded images.
+
+---
+
+## ⚙️ Configuration
+
+The application configuration may include the following settings. Confirm the actual names and defaults in the current codebase.
+
+| Setting                   | Purpose                                               |
+| ------------------------- | ----------------------------------------------------- |
+| `SECRET_KEY`              | Flask session security                                |
+| `SQLALCHEMY_DATABASE_URI` | Database connection                                   |
+| `UPLOAD_FOLDER`           | Local upload directory                                |
+| `MAX_CONTENT_LENGTH`      | Maximum request size                                  |
+| `ALLOWED_EXTENSIONS`      | Supported file extensions                             |
+| `DEFAULT_CLUSTERS`        | Default clustering parameter                          |
+| `MIN_REPORTS_PER_CLUSTER` | Minimum report count used in clustering configuration |
+| `POINTS_PER_REPORT`       | Points awarded under the gamification rules           |
+| `DEPOT_LAT`               | Collection depot latitude                             |
+| `DEPOT_LON`               | Collection depot longitude                            |
+
+### Configuration Best Practices
+
+* Store sensitive values in environment variables or a managed secret store.
+* Use a strong, unpredictable secret key in production.
+* Validate configuration at application startup.
+* Avoid hard-coded administrator credentials.
+* Keep development and production configuration separate.
+* Never log API secrets or passwords.
+
+---
+
+## ☁️ Cloudinary Integration Roadmap
+
+Cloudinary is a proposed option for centralized image storage and delivery.
+
+**Status: Planned — implementation must be verified before this section is marked complete.**
+
+### Why Cloudinary?
+
+Cloudinary can provide:
+
+* Centralized image storage.
+* HTTPS image delivery.
+* Image transformations and optimization.
+* Asset management through unique public identifiers.
+* Delivery infrastructure for application images.
+
+### Proposed Upload Workflow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend
+    participant Backend as Flask Backend
+    participant Cloudinary
+    participant Database
+
+    User->>Frontend: Select waste photograph
+    Frontend->>Backend: Submit report and image
+    Backend->>Backend: Authenticate and validate
+    Backend->>Cloudinary: Upload image
+    Cloudinary-->>Backend: Return asset reference
+    Backend->>Database: Save report and image reference
+    Database-->>Backend: Confirm persistence
+    Backend-->>Frontend: Return report confirmation
+    Frontend-->>User: Display result
 ```
 
-#### Default Development Credentials
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@mapmywaste.com` | `admin123` | Full access (`/admin/*`, fleet, clustering, map) |
-| **Citizen User** | Self-registered via `/auth/register` | User-defined | Reporting portal (`/upload`, `/dashboard`, `/profile`) |
+### Proposed Implementation Steps
 
-> [!WARNING]
-> The default admin credentials are intended strictly for local development and demonstration. Change these credentials before deploying to any public or staging environment.
+1. Audit the existing upload and image-display workflows.
+2. Add the Cloudinary Python SDK to the dependencies.
+3. Configure credentials through environment variables.
+4. Create a reusable image-upload service.
+5. Validate images on the backend before uploading.
+6. Store the Cloudinary asset reference with the waste report.
+7. Update image-display logic to support cloud URLs.
+8. Preserve access to legacy local images where necessary.
+9. Add upload failure handling and orphaned-asset cleanup.
+10. Test the integration before deploying it.
 
----
+### Suggested Environment Variables
 
-## 🧭 Application Routes & Endpoints
-
-| Endpoint | Method | Access | Description |
-| :--- | :---: | :---: | :--- |
-| `/` | `GET` | Public | Landing page or automatic role-based redirect for authenticated users |
-| `/auth/register` | `GET, POST` | Public | Citizen account registration |
-| `/auth/login` | `GET, POST` | Public | User authentication and session creation |
-| `/auth/logout` | `GET` | Authenticated | Terminates active user session |
-| `/dashboard` | `GET` | Citizen | User personal overview, recent reports, and earned badges |
-| `/upload` | `GET, POST` | Citizen | Waste reporting form with image upload and geolocation extraction |
-| `/report/<id>/result` | `GET` | Citizen | Post-submission receipt with location geocoding and points feedback |
-| `/reports/my` | `GET` | Citizen | Complete submission history for current citizen |
-| `/profile` | `GET` | Citizen | User profile details and activity statistics |
-| `/leaderboard` | `GET` | Public | Community points and reporting leaderboard |
-| `/contact` | `GET, POST` | Public | Contact inquiry form |
-| `/admin/` | `GET` | Administrator | Admin command dashboard with metric counters and report logs |
-| `/admin/cluster` | `POST` | Administrator | Triggers K-Means spatial clustering across active waste reports |
-| `/admin/map` | `GET` | Administrator | Geospatial map visualizer with reports and cluster centroids |
-| `/admin/api/reports` | `GET` | Administrator | JSON API providing report locations and metadata for map rendering |
-| `/admin/optimize-routes` | `GET, POST` | Administrator | Route optimization interface based on cluster centroids |
-| `/admin/truck-assignments` | `GET` | Administrator | Fleet operations overview, map view, and daily assignment board |
-| `/admin/manage-trucks` | `GET, POST` | Administrator | Vehicle registry management (truck number, capacity, type) |
-| `/admin/manage-drivers` | `GET, POST` | Administrator | Driver registry management (license, phone, duty status) |
-| `/admin/manage-routes` | `GET, POST` | Administrator | Collection route configuration and waypoint coordinates |
-| `/admin/seed-data` | `POST` | Administrator | Seeds simulated citizen users and waste reports for testing |
-| `/admin/seed-fleet-data` | `POST` | Administrator | Seeds sample trucks, drivers, routes, and daily schedules |
-| `/admin/clear-recent-reports`| `POST` | Administrator | Cleans up reports created within the preceding 24 hours |
-| `/admin/clear_reports` | `POST` | Administrator | Resets report database and clears non-admin demonstration data |
-
----
-
-## ⚙️ Configuration & Security
-
-All runtime settings are encapsulated in [config.py](config.py) and can be overridden via system environment variables:
-
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `SECRET_KEY` | `dev-secret-key-change-in-production` | Session encryption and CSRF security key |
-| `DATABASE_URL` | `sqlite:///mapmywaste.db` | SQLAlchemy database connection URI |
-| `UPLOAD_FOLDER` | `uploads` | Local directory for storing user-submitted images |
-| `MAX_CONTENT_LENGTH` | `16777216` (16 MB) | Maximum permitted upload file size |
-| `ALLOWED_EXTENSIONS`| `png, jpg, jpeg, gif, webp` | Whitelisted image file extensions |
-| `DEFAULT_CLUSTERS` | `5` | Default number of K-Means clusters |
-| `MIN_REPORTS_PER_CLUSTER` | `10` | Heuristic threshold to calculate dynamic cluster counts ($k$) |
-| `POINTS_PER_REPORT` | `10` | Base points awarded per verified report |
-| `DEPOT_LAT`, `DEPOT_LON`| `13.0827, 80.2707` | Central municipal depot coordinates for route planning |
-
-### Security Measures Implemented
-- **Password Hashing**: Passwords are cryptographically salted and hashed using Werkzeug (`scrypt` / `pbkdf2:sha256`).
-- **File Upload Protection**: Validates extensions against an explicit whitelist and sanitizes filenames using `secure_filename()` with unique timestamps.
-- **Request Size Limits**: Enforces a strict 16MB file limit at the application layer to guard against denial-of-service via oversized payloads.
-- **Role-Based Access Control**: Sensitive administrative endpoints are guarded by the custom `@admin_required` decorator.
-- **Repository Hygiene**: Sensitive database files (`*.db`, `*.sqlite`), user uploads, local virtual environments, and `.env` files are excluded via `.gitignore`.
-
----
-
-## 🔬 Machine Learning & Algorithmic Implementation
-
-### 1. Spatial K-Means Clustering (`app/services/clustering.py`)
-To prevent erratic sanitation truck routing, CiviClean aggregates point reports into unified geographic zones using **K-Means clustering**:
-- **Coordinate Matrix**: Extracts all valid $[latitude, longitude]$ pairs from active `WasteReport` records.
-- **Dynamic Cluster Estimation**: If the number of clusters $k$ is not explicitly specified by the administrator, $k$ is calculated adaptively:
-  $$k = \min\left(\text{DEFAULT\_CLUSTERS}, \max\left(1, \frac{N_{\text{reports}}}{\text{MIN\_REPORTS\_PER\_CLUSTER}}\right)\right)$$
-- **Model Fitting**: Uses `sklearn.cluster.KMeans(n_clusters=k, random_state=42, n_init=10)` to compute cluster assignments.
-- **Centroid Calculation**: Calculates geographic mean centers $(\bar{\phi}, \bar{\lambda})$ for each cluster group to represent optimal pickup depot stops:
-  $$\bar{\phi} = \frac{1}{|C_i|} \sum_{r \in C_i} \phi_r, \quad \bar{\lambda} = \frac{1}{|C_i|} \sum_{r \in C_i} \lambda_r$$
-- **Database Synchronization**: Updates the `cluster_id` foreign reference on each report and returns computed centroids for map rendering.
-
-### 2. Cryptographic Duplicate & Spam Detection (`app/services/detector.py`)
-To prevent redundant reporting and intentional spam:
-- Computes an **MD5 cryptographic checksum** across binary chunks of each uploaded image.
-- Queries existing records in `WasteReport` by `image_hash`. If an identical hash is found, the submission is flagged with `is_spam = True`.
-- Additionally performs duplicate checking against normalized original filenames.
-
-### 3. Waste Detection Scoring Architecture
-- **Model Artifact**: A PyTorch weight checkpoint (`mapmywaste_garbage_detector.pth`) is located in the `model/` directory.
-- **Inference Pipeline Status**: The production service currently verifies image integrity through Pillow (`img.verify()`) and generates a confidence score between 55% and 87% (`random.uniform(55, 87)`) for demonstration and validation. A local grayscale edge/texture variance heuristic function (`_heuristic_score`) is also included in `app/services/detector.py` as an algorithmic baseline.
-
----
-
-## 🧪 Testing & Verification
-
-The codebase includes utility scripts and integration tests located in `scripts/` and `testing_files/`:
-
-### Database Schema Verification
-Verifies table structure and required columns across all entities:
-```bash
-python -m scripts.print_db_location
+```dotenv
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### Integration Test
-Validates image processing, hash calculation, waste report generation, and duplicate detection:
-```bash
-python -m testing_files.test_integration
-```
+These are placeholders. Replace them with actual values in your local environment only.
 
-> [!NOTE]
-> When executing scripts within `testing_files/` or `scripts/`, run them as modules (`python -m <directory>.<script_name>`) from the repository root to ensure the application package (`app`) resolves correctly in your Python path.
+Never commit real credentials. Keep the API secret on the backend and do not expose it to browser code.
 
----
+### Database Compatibility
 
-## 🔮 Limitations & Future Roadmap
+Review the existing `WasteReport` model before introducing additional fields.
 
-While CiviClean provides a robust operational foundation, several enhancements are planned for future releases:
+Possible fields include:
 
-1. **Production Deep Learning Inference**: Containerize a PyTorch/ONNX computer vision model (e.g., YOLOv8 or EfficientNet) to classify specific waste categories (organic, plastic, electronic, hazardous) directly on ingest.
-2. **Dynamic Turn-by-Turn Routing**: Integrate an open-source routing engine (such as [OSRM](http://project-osrm.org/) or GraphHopper) to compute road-network-constrained paths between collection centroids, replacing straight-line centroid approximations.
-3. **Real-Time Fleet Telematics**: Connect IoT GPS tracking units on municipal vehicles to stream live truck locations to the administrative map via WebSockets.
-4. **Mobile Progressive Web App (PWA)**: Add service worker caching and offline photo queueing so citizens can document waste in areas with limited cellular connectivity.
-5. **Municipal Work Order Integrations**: Enable automated export of scheduled assignments to municipal enterprise systems via RESTful webhooks.
+* `image_url`
+* `cloudinary_public_id`
+* `image_storage_provider`
 
----
+These are proposed fields and must be adapted to the existing schema.
 
-## 🤝 Contributing & License
+### Integration Acceptance Criteria
 
-Contributions to improve CiviClean are welcome:
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/your-feature-name`.
-3. Commit your changes with clear, descriptive commit messages: `git commit -m "feat: add your feature description"`.
-4. Push to your branch: `git push origin feature/your-feature-name`.
-5. Open a Pull Request detailing the problem solved and testing performed.
-
-This project is licensed under standard open-source terms. See the repository for specific licensing details and third-party notices.
+* Authorized users can upload valid images.
+* Invalid files are rejected.
+* Cloudinary assets are referenced correctly in the database.
+* The application displays stored images correctly.
+* Existing reports remain accessible.
+* Failures are handled without leaving uncontrolled orphaned assets.
+* Secrets are absent from source control.
+* Relevant tests pass.
 
 ---
 
-## 🌍 Our Mission
+## 🔐 Security and Privacy
 
-**CiviClean** is built on the belief that cleaner cities begin with informed, empowered communities. By transforming everyday citizens into active environmental contributors and equipping municipal authorities with spatial intelligence, CiviClean strives to make urban sanitation proactive, transparent, and efficient for all.
+Security is important because CiviClean processes user accounts, uploaded photographs, location information, and administrative operations.
+
+### Authentication and Authorization
+
+* Hash passwords using a suitable password-hashing mechanism.
+* Protect user sessions and sensitive application routes.
+* Enforce administrative permissions on the backend.
+* Prevent users from accessing or modifying reports they do not own unless explicitly authorized.
+* Avoid publishing default credentials.
+
+### File Upload Security
+
+* Validate actual image content.
+* Restrict supported formats and upload sizes.
+* Use safe filenames and storage references.
+* Handle malformed images and upload errors.
+* Avoid exposing internal filesystem paths.
+
+### Location Privacy
+
+* Explain when location information is collected.
+* Consider whether image GPS metadata should be retained.
+* Avoid exposing precise user locations unnecessarily.
+* Review photographs for potentially sensitive visual content.
+
+### Secrets and Configuration
+
+* Keep credentials outside the repository.
+* Exclude `.env` and other secret-bearing files from Git.
+* Use appropriate production secret management.
+* Rotate credentials if they are exposed.
+
+### Data Management
+
+* Define data retention policies.
+* Restrict access to private reports.
+* Protect database backups.
+* Review logging to avoid recording sensitive information unnecessarily.
+
+---
+
+## 🧪 Testing and Quality Assurance
+
+Testing should cover the application's core workflows and security-sensitive behavior.
+
+| Area                | Recommended tests                                           |
+| ------------------- | ----------------------------------------------------------- |
+| Authentication      | Registration, login, logout, session handling               |
+| Authorization       | Access to protected user and administrator routes           |
+| Waste Reporting     | Valid and invalid submissions                               |
+| Image Upload        | File validation, size limits, malformed files               |
+| Location            | Coordinate validation and optional EXIF extraction          |
+| Database            | Persistence, relationships, and invalid records             |
+| Duplicate Detection | Repeated files and duplicate-status behavior                |
+| Clustering          | Valid coordinates, insufficient data, and invalid inputs    |
+| Gamification        | Points and badge rules                                      |
+| Fleet Management    | Truck, driver, route, and assignment workflows              |
+| Cloudinary          | Upload, persistence, display, failure handling, and cleanup |
+| Security            | Unauthorized access, secret exposure, and upload abuse      |
+
+### Running Tests
+
+Use the test commands supported by the current repository. If a test suite is available, document its setup and invocation here.
+
+Do not mark features as tested until the corresponding tests have actually been executed.
+
+---
+
+## 🚀 Deployment Considerations
+
+Before deploying CiviClean, verify the requirements for the selected hosting environment.
+
+Recommended considerations include:
+
+* Production-ready WSGI server.
+* Secure environment configuration.
+* Appropriate database configuration.
+* HTTPS.
+* Database backups and migration procedures.
+* Secure image storage.
+* Application logging and error monitoring.
+* Dependency updates and vulnerability checks.
+* Rate limiting and upload-abuse prevention.
+* Monitoring of storage, bandwidth, and service costs.
+* Recovery procedures for application and database failures.
+
+A local development server should not be treated as a production deployment solution.
+
+---
+
+## 🗺️ Future Roadmap
+
+Potential future improvements include:
+
+### Phase 1 — Reliability and Security
+
+* Review authentication and authorization.
+* Strengthen upload validation.
+* Improve environment configuration.
+* Establish automated tests.
+
+### Phase 2 — Cloud Image Storage
+
+* Integrate Cloudinary or another appropriate storage provider.
+* Preserve existing report-image associations.
+* Implement upload error handling and asset cleanup.
+* Verify image privacy and access policies.
+
+### Phase 3 — Geospatial Improvements
+
+* Improve waste hotspot visualization.
+* Evaluate clustering quality.
+* Introduce meaningful geographic performance metrics.
+
+### Phase 4 — Collection Route Optimization
+
+* Define route-planning objectives and constraints.
+* Evaluate routing algorithms.
+* Measure route quality against a documented baseline.
+* Account for depot locations, travel distances, and fleet availability where applicable.
+
+### Phase 5 — Analytics and Monitoring
+
+* Improve operational reporting.
+* Add performance monitoring.
+* Track report-processing and collection workflow metrics.
+
+These are roadmap ideas, not claims that the functionality is already implemented.
+
+---
+
+## 🤝 Contributing
+
+Contributions that improve CiviClean's reliability, usability, security, and maintainability are welcome.
+
+Before contributing:
+
+1. Review the existing architecture.
+2. Keep changes focused and maintainable.
+3. Follow established coding conventions.
+4. Test affected functionality.
+5. Document configuration or database changes.
+6. Avoid committing secrets, private data, or generated artifacts.
+
+### Suggested Contribution Workflow
+
+1. Create a feature branch.
+2. Implement the change.
+3. Run relevant tests.
+4. Review the changes for security and regressions.
+5. Submit a pull request with a clear description.
+
+---
+
+## 📄 License
+
+Add the applicable license information for this repository.
+
+Do not claim a specific license until the repository's license file and applicable rights have been verified.
+
+---
+
+## 🌱 Project Vision
+
+CiviClean aims to make community waste reporting more accessible and help collection teams make better-informed operational decisions.
+
+By connecting citizens, geographic information, report analysis, and collection management, the platform seeks to support cleaner public spaces and more coordinated waste management.
+
+**CiviClean — Report waste. Map hotspots. Plan smarter collections.**

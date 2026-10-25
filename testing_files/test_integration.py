@@ -13,11 +13,11 @@ app = create_app()
 
 with app.app_context():
     # Ensure we have admin user
-    admin = User.query.filter_by(email='admin@mapmywaste.com').first()
+    admin = User.query.filter(User.email.in_(['admin@civiclean.com', 'admin@mapmywaste.com'])).first()
     if not admin:
         admin = User(
             name='Admin',
-            email='admin@mapmywaste.com',
+            email='admin@civiclean.com',
             role='admin'
         )
         admin.set_password('admin123')

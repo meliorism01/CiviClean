@@ -8,8 +8,9 @@ from app.models import User
 
 app = create_app()
 print('Database URI:', app.config.get('SQLALCHEMY_DATABASE_URI'))
-print('Database file path:', 'mapmywaste.db')
-print('File exists before:', os.path.exists('mapmywaste.db'))
+db_file = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
+print('Database file path:', db_file)
+print('File exists before:', os.path.exists(db_file))
 
 with app.app_context():
     # Try to get the engine and inspect it
@@ -22,8 +23,8 @@ with app.app_context():
     print('\nCalling db.create_all()...')
     db.create_all()
     
-    print('File exists after:', os.path.exists('mapmywaste.db'))
-    print('File size:', os.path.getsize('mapmywaste.db') if os.path.exists('mapmywaste.db') else 'N/A')
+    print('File exists after:', os.path.exists(db_file))
+    print('File size:', os.path.getsize(db_file) if os.path.exists(db_file) else 'N/A')
     
     # Re-inspect
     inspector = inspect(db.engine)

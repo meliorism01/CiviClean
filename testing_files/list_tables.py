@@ -1,6 +1,8 @@
 import sqlite3
 
-con = sqlite3.connect('mapmywaste.db')
+import os
+db_name = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
+con = sqlite3.connect(db_name)
 cur = con.cursor()
 
 # List all tables

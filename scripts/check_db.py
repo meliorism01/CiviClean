@@ -1,6 +1,6 @@
 import sqlite3, os
 
-db='mapmywaste.db'
+db = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
 if not os.path.exists(db):
     print('DB not found', db)
 else:

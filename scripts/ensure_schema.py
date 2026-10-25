@@ -1,6 +1,6 @@
 import sqlite3, os
  
-DB='mapmywaste.db'
+DB = 'civiclean.db' if os.path.exists('civiclean.db') else ('instance/civiclean.db' if os.path.exists('instance/civiclean.db') else 'mapmywaste.db')
 if not os.path.exists(DB):
     print('DB not found, nothing to migrate:', DB)
     raise SystemExit(1)
