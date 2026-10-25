@@ -11,6 +11,30 @@
 
 ---
 
+## 🌐 Live Application & Demo Access
+
+> **Live Production URL:** [https://civiclean.onrender.com/](https://civiclean.onrender.com/)
+
+[![Live on Render](https://img.shields.io/badge/Render-Deployed%20Live-brightgreen?logo=render&style=for-the-badge)](https://civiclean.onrender.com/)
+
+### 🔑 Demo Login Credentials
+
+| Role | Portal / Login URL | Email | Password | Access Level |
+| :--- | :--- | :--- | :--- | :--- |
+| **Administrator** | [`/auth/login`](https://civiclean.onrender.com/auth/login) | `admin@civiclean.com` | `admin123` | Full admin privileges (`/admin/*`, Maps, K-Means Clustering, Fleet Management) |
+| **Citizen User** | [`/auth/register`](https://civiclean.onrender.com/auth/register) | *(Self-registration)* | *(User-defined)* | Waste photo reporting (`/upload`), personal dashboard, gamification badges |
+
+### 🚀 Direct Live Navigation Links
+- 🏠 **Homepage**: [https://civiclean.onrender.com/](https://civiclean.onrender.com/)
+- 📸 **Citizen Reporting Portal**: [https://civiclean.onrender.com/upload](https://civiclean.onrender.com/upload)
+- 🏆 **Civic Leaderboard**: [https://civiclean.onrender.com/leaderboard](https://civiclean.onrender.com/leaderboard)
+- 🔐 **Authentication (Login)**: [https://civiclean.onrender.com/auth/login](https://civiclean.onrender.com/auth/login)
+- 📊 **Admin Command Center**: [https://civiclean.onrender.com/admin/](https://civiclean.onrender.com/admin/)
+- 🗺️ **Hotspot Map & Clustering**: [https://civiclean.onrender.com/admin/map](https://civiclean.onrender.com/admin/map)
+- 🚛 **Fleet & Truck Dispatch**: [https://civiclean.onrender.com/admin/truck-assignments](https://civiclean.onrender.com/admin/truck-assignments)
+
+---
+
 ## 📌 Overview
 
 **CiviClean** is a smart waste reporting and collection management platform designed to connect community-driven waste reporting with data-informed collection planning.
@@ -659,6 +683,22 @@ Recommended considerations include:
 * Recovery procedures for application and database failures.
 
 A local development server should not be treated as a production deployment solution.
+
+### Active Render Deployment Configuration
+
+CiviClean is configured for zero-downtime, production-ready deployment on **Render**:
+
+* **Web Service Entrypoint**: `gunicorn app:app` (or `gunicorn run:app` / `gunicorn wsgi:app`)
+* **Infrastructure as Code**: [render.yaml](render.yaml) is pre-configured with service defaults.
+* **Environment Variables**:
+  | Variable | Example / Recommended Value | Description |
+  | :--- | :--- | :--- |
+  | `SECRET_KEY` | *(64-hex cryptographically secure key)* | Protects sessions and authentication cookies |
+  | `DATABASE_URL` | `sqlite:///instance/civiclean.db` | SQLAlchemy database URI |
+  | `FLASK_ENV` | `production` | Production mode switch |
+  | `FLASK_DEBUG` | `0` | Disables debug interactive traceback |
+  | `PYTHON_VERSION` | `3.10.12` | Runtime python version |
+  | `ADMIN_PASSWORD` | `admin123` | Master password initialized on startup |
 
 ---
 
