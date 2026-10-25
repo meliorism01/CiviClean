@@ -151,11 +151,11 @@ def clear_reports():
         db.session.commit()
 
         # Ensure admin user exists (after commit, in case admin was deleted)
-        admin = User.query.filter_by(email='admin@mapmywaste.com').first()
+        admin = User.query.filter(User.email.in_(['admin@civiclean.com', 'admin@mapmywaste.com'])).first()
         if not admin:
             admin = User(
                 name='Admin',
-                email='admin@mapmywaste.com',
+                email='admin@civiclean.com',
                 role='admin',
                 points=0,
                 reports_count=0,
@@ -266,10 +266,10 @@ def seed_fleet_data():
 
         # Sample drivers
         drivers_data = [
-            {'name': 'Raj kumar', 'license_number': 'TN123456789', 'phone': '+91 98765 43210', 'email': 'raj.driver@mapmywaste.com'},
-            {'name': 'Suresh Babu', 'license_number': 'TN987654321', 'phone': '+91 98765 43211', 'email': 'suresh.driver@mapmywaste.com'},
-            {'name': 'Mohan Raj', 'license_number': 'TN456789123', 'phone': '+91 98765 43212', 'email': 'mohan.driver@mapmywaste.com'},
-            {'name': 'Karthik Nair', 'license_number': 'TN789123456', 'phone': '+91 98765 43213', 'email': 'karthik.driver@mapmywaste.com'},
+            {'name': 'Raj kumar', 'license_number': 'TN123456789', 'phone': '+91 98765 43210', 'email': 'raj.driver@civiclean.com'},
+            {'name': 'Suresh Babu', 'license_number': 'TN987654321', 'phone': '+91 98765 43211', 'email': 'suresh.driver@civiclean.com'},
+            {'name': 'Mohan Raj', 'license_number': 'TN456789123', 'phone': '+91 98765 43212', 'email': 'mohan.driver@civiclean.com'},
+            {'name': 'Karthik Nair', 'license_number': 'TN789123456', 'phone': '+91 98765 43213', 'email': 'karthik.driver@civiclean.com'},
         ]
 
         drivers_created = 0

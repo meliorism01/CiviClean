@@ -1,4 +1,4 @@
-// Main JavaScript for MapMyWaste
+// Main JavaScript for CiviClean
 
 // Set current year in footer
 document.addEventListener('DOMContentLoaded', function() {

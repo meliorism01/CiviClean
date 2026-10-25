@@ -20,7 +20,9 @@ def _load_model():
         return
     try:
         import torch
-        _MODEL_PATH = os.path.join(_project_root(), 'model', 'mapmywaste_garbage_detector.pth')
+        _MODEL_PATH = os.path.join(_project_root(), 'model', 'civiclean_garbage_detector.pth')
+        if not os.path.exists(_MODEL_PATH):
+            _MODEL_PATH = os.path.join(_project_root(), 'model', 'mapmywaste_garbage_detector.pth')
         if not os.path.exists(_MODEL_PATH):
             _MODEL_LOADED = False
             return
