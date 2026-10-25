@@ -18,7 +18,9 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     
-    # Create uploads directory
+    # Create uploads and instance directories
+    os.makedirs(app.instance_path, exist_ok=True)
+    os.makedirs(os.path.join(app.root_path, '..', 'instance'), exist_ok=True)
     upload_dir = os.path.join(app.root_path, '..', app.config['UPLOAD_FOLDER'])
     os.makedirs(upload_dir, exist_ok=True)
     
